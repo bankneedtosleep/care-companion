@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8f4ef;
+  --foreground: #2c2a3a;
+  --terra-cream: #f8f4ef;
+  --terra-sand: #f6d5b8;
+  --terra-rose: #f2b790;
+  --terra-moss: #dfeee7;
+  --terra-deep: #2c2a3a;
+  --terra-olive: #1d7665;
+  --cartoon-blush: #fde7f3;
+  --cartoon-blue: #dff3ff;
+  --cartoon-mint: #d9f7e8;
+  --cartoon-yellow: #fff4c2;
+  --cartoon-peach: #f9c7a7;
+  --cartoon-lilac: #f1e8ff;
+}
+
+@theme inline { --color-background: var(--background); --color-foreground: var(--foreground); }
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(255, 244, 194, 0.85), transparent 25%),
+    radial-gradient(circle at bottom right, rgba(223, 243, 255, 0.75), transparent 26%),
+    var(--terra-cream);
+  color: var(--foreground);
+  font-family: var(--font-nunito), var(--font-noto-thai), var(--font-geist-sans), sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-mali), var(--font-nunito), var(--font-noto-thai), sans-serif;
+  letter-spacing: -0.04em;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: #b9e6da;
+  color: #153c34;
+}
+
+:focus-visible {
+  outline: 3px solid #f09572;
+  outline-offset: 3px;
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-floaty {
+  animation: floaty 1.8s ease-in-out infinite;
+}
