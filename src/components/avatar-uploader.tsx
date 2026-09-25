@@ -64,17 +64,17 @@ export function AvatarUploader({ userId, initialUrl, fullName }: AvatarUploaderP
     <div className="flex shrink-0 items-center gap-3">
       <div
         aria-label="รูปโปรไฟล์"
-        className={`grid h-14 w-14 place-items-center overflow-hidden rounded-2xl bg-[#e1f0e9] text-lg font-bold text-[#1d7665] ${imageUrl ? "bg-cover bg-center text-transparent" : ""}`}
+        className={`icon-circle bg-pastel-mint text-xl font-black text-ink ${imageUrl ? "bg-cover bg-center text-transparent" : ""}`}
         style={imageUrl ? { backgroundImage: `url("${imageUrl}")` } : undefined}
       >
         {initial}
       </div>
       <div>
         <input ref={inputRef} className="sr-only" id="avatar" type="file" accept="image/png,image/jpeg,image/webp" onChange={uploadAvatar} />
-        <label htmlFor="avatar" className="cursor-pointer rounded-full border border-[#bcd5ca] px-3.5 py-2 text-xs font-bold text-[#1d6658] transition hover:bg-[#eaf5f0]">
+        <label htmlFor="avatar" className="btn-cartoon inline-block bg-white px-3.5 py-2 text-xs font-black text-ink transition hover:-translate-y-1">
           {isUploading ? "กำลังอัปโหลด…" : "เปลี่ยนรูป"}
         </label>
-        {message ? <p className="mt-2 max-w-32 text-[11px] leading-4 text-[#70847b]" aria-live="polite">{message}</p> : null}
+        {message ? <p className="mt-2 max-w-32 text-[11px] font-bold leading-4 text-ink/50" aria-live="polite">{message}</p> : null}
       </div>
     </div>
   );

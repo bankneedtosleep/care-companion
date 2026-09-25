@@ -41,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="th"
       className={`${geistSans.variable} ${geistMono.variable} ${notoThai.variable} ${mali.variable} ${nunito.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#F8F4EF] font-[var(--font-nunito),var(--font-noto-thai),sans-serif] text-[#2C2A3A]">{children}</body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

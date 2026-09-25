@@ -1,36 +1,34 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f8f4ef;
-  --foreground: #2c2a3a;
-  --terra-cream: #f8f4ef;
-  --terra-sand: #f6d5b8;
-  --terra-rose: #f2b790;
-  --terra-moss: #dfeee7;
-  --terra-deep: #2c2a3a;
-  --terra-olive: #1d7665;
-  --cartoon-blush: #fde7f3;
-  --cartoon-blue: #dff3ff;
-  --cartoon-mint: #d9f7e8;
-  --cartoon-yellow: #fff4c2;
-  --cartoon-peach: #f9c7a7;
-  --cartoon-lilac: #f1e8ff;
+@theme {
+  --color-background: #FFFDF7;
+  --color-foreground: #2C2A3A;
+  --color-ink: #2C2A3A;
+  --color-cream: #FFFDF7;
+  --color-pastel-pink: #FDE7F3;
+  --color-pastel-blue: #DFF3FF;
+  --color-pastel-mint: #D9F7E8;
+  --color-pastel-yellow: #FFF4C2;
+  --color-pastel-peach: #FFE5D3;
+  --color-pastel-lilac: #E9E0FF;
+  --color-cartoon-mint: #B9F1C2;
+  --color-cartoon-sky: #BFEAFF;
+  --color-cartoon-peach: #F9C7A7;
+  --color-cartoon-sage: #DBF0E6;
+  --font-sans: var(--font-nunito), var(--font-noto-thai), sans-serif;
+  --font-display: var(--font-mali), var(--font-nunito), var(--font-noto-thai), sans-serif;
 }
 
-@theme inline { --color-background: var(--background); --color-foreground: var(--foreground); }
-
 body {
-  background:
-    radial-gradient(circle at top left, rgba(255, 244, 194, 0.85), transparent 25%),
-    radial-gradient(circle at bottom right, rgba(223, 243, 255, 0.75), transparent 26%),
-    var(--terra-cream);
-  color: var(--foreground);
-  font-family: var(--font-nunito), var(--font-noto-thai), var(--font-geist-sans), sans-serif;
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-mali), var(--font-nunito), var(--font-noto-thai), sans-serif;
-  letter-spacing: -0.04em;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 * {
@@ -43,20 +41,111 @@ html {
 }
 
 ::selection {
-  background: #b9e6da;
-  color: #153c34;
+  background: #D9F7E8;
+  color: #2C2A3A;
 }
 
-:focus-visible {
-  outline: 3px solid #f09572;
-  outline-offset: 3px;
+/* ── Cartoon design system ─────────────────────── */
+/* Using @layer so Tailwind utilities (like bg-*) can override defaults */
+
+@layer components {
+  .card-cartoon {
+    border: 4px solid #2C2A3A;
+    border-radius: 2rem;
+    background-color: #FFFDF7;
+    box-shadow: 0 8px 0 #2C2A3A;
+  }
+
+  .card-cartoon-sm {
+    border: 3px solid #2C2A3A;
+    border-radius: 1.5rem;
+    background-color: #FFFDF7;
+    box-shadow: 0 5px 0 #2C2A3A;
+  }
+
+  .btn-cartoon {
+    border: 4px solid #2C2A3A;
+    border-radius: 9999px;
+    font-weight: 900;
+    box-shadow: 0 6px 0 #2C2A3A;
+    transition: transform 0.1s, box-shadow 0.1s;
+    cursor: pointer;
+  }
+
+  .btn-cartoon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #2C2A3A;
+  }
+
+  .btn-cartoon:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #2C2A3A;
+  }
+
+  .input-cartoon {
+    border: 3px solid #2C2A3A;
+    border-radius: 1.2rem;
+    background-color: #FFFDF7;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-cartoon:focus {
+    border-color: #B9F1C2;
+    box-shadow: 0 0 0 3px #D9F7E8;
+  }
+
+  .badge-cartoon {
+    border: 3px solid #2C2A3A;
+    border-radius: 9999px;
+    padding: 0.35rem 0.85rem;
+    font-weight: 900;
+    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .icon-circle {
+    display: grid;
+    place-items: center;
+    border: 4px solid #2C2A3A;
+    border-radius: 9999px;
+    width: 3rem;
+    height: 3rem;
+  }
 }
+
+/* ── Animations ────────────────────────────────── */
 
 @keyframes floaty {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  80% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .animate-floaty {
-  animation: floaty 1.8s ease-in-out infinite;
+  animation: floaty 3s ease-in-out infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 2s ease-in-out infinite;
+}
+
+.animate-pop-in {
+  animation: pop-in 0.5s ease-out forwards;
 }

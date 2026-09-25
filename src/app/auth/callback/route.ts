@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const requestedRole = requestUrl.searchParams.get("role");
+  const cookieStore = await cookies();
+  const requestedRole = requestUrl.searchParams.get("role") ?? cookieStore.get("care-companion-role")?.value;
   const role = requestedRole === "customer" || requestedRole === "companion" ? requestedRole : null;
   if (code) {
     const supabase = await createClient();
@@ -16,7 +18,9 @@ export async function GET(request: Request) {
     if (user) {
       const { data: account } = await supabase.from("users").select("role").eq("id", user.id).maybeSingle();
       if (account?.role === "admin" || account?.role === "customer" || account?.role === "companion") {
-        return NextResponse.redirect(new URL(`/${account.role}`, requestUrl.origin));
+        const response = NextResponse.redirect(new URL(`/${account.role}`, requestUrl.origin));
+        response.cookies.delete("care-companion-role");
+        return response;
       }
     }
   }

@@ -1,8 +1,18 @@
-<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="96" height="96" rx="28" fill="#0F766E"/>
-  <path d="M24 68C34 61 39 52 39 40C39 34 43 29 49 29C55 29 59 34 59 40C59 53 65 61 75 68" stroke="#CCFBF1" stroke-width="7" stroke-linecap="round"/>
-  <circle cx="49" cy="29" r="7" fill="#FDBA8C"/>
-  <path d="M24 68H75" stroke="white" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="24" cy="68" r="5" fill="#FDBA8C"/>
-  <circle cx="75" cy="68" r="5" fill="#CCFBF1"/>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Heart Body -->
+  <path d="M128 210C128 210 50 160 50 100C50 70 70 50 100 50C115 50 125 58 128 65C131 58 141 50 156 50C186 50 206 70 206 100C206 160 128 210 128 210Z" fill="#FDE7F3" stroke="#2C2A3A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Eyes -->
+  <circle cx="104" cy="110" r="12" fill="#2C2A3A"/>
+  <circle cx="152" cy="110" r="12" fill="#2C2A3A"/>
+  
+  <!-- Blush -->
+  <ellipse cx="84" cy="122" rx="10" ry="6" fill="#F9C7A7"/>
+  <ellipse cx="172" cy="122" rx="10" ry="6" fill="#F9C7A7"/>
+  
+  <!-- Smile -->
+  <path d="M116 125C116 125 123 135 128 135C133 135 140 125 140 125" stroke="#2C2A3A" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Little Sparkle -->
+  <path d="M190 35L195 50L210 55L195 60L190 75L185 60L170 55L185 50Z" fill="#FFF4C2" stroke="#2C2A3A" stroke-width="10" stroke-linejoin="round"/>
 </svg>

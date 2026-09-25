@@ -1,128 +1,287 @@
+"use client";
+
 import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/browser";
 import { Brand } from "@/components/brand";
+import { IconMapHeart, IconPeopleHands, IconShieldCheck, IconStar, IconHandshake, IconClipboard } from "@/components/cartoon-icons";
+import { motion } from "framer-motion";
 
 const steps = [
-  { number: "01", title: "เล่าเรื่องธุระของคุณ", text: "บอกวันเวลา จุดเริ่มต้น ปลายทาง และรายละเอียดที่อยากให้ช่วย" },
-  { number: "02", title: "พบคนที่เหมาะ", text: "เลือกดู Companion ตามพื้นที่ ความถนัด และช่วงเวลาที่สะดวก" },
-  { number: "03", title: "ไปด้วยกันอย่างอุ่นใจ", text: "ติดตามสถานะคำขอจนภารกิจของคุณเสร็จเรียบร้อย" },
+  {
+    number: "01",
+    title: "เล่าเรื่องธุระของคุณ",
+    text: "บอกวันเวลา จุดเริ่มต้น ปลายทาง และรายละเอียดที่อยากให้ช่วย",
+    color: "bg-pastel-pink",
+    Icon: IconMapHeart,
+  },
+  {
+    number: "02",
+    title: "พบคนที่เหมาะ",
+    text: "เลือกดู Companion ตามพื้นที่ ความถนัด และช่วงเวลาที่สะดวก",
+    color: "bg-pastel-blue",
+    Icon: IconPeopleHands,
+  },
+  {
+    number: "03",
+    title: "ไปด้วยกันอย่างอุ่นใจ",
+    text: "ติดตามสถานะคำขอจนภารกิจของคุณเสร็จเรียบร้อย",
+    color: "bg-pastel-mint",
+    Icon: IconShieldCheck,
+  },
 ];
 
 const values = [
-  { icon: "⌁", title: "เลือกได้ด้วยตัวเอง", text: "คุณตัดสินใจทุกขั้นตอน เลือกเฉพาะคนและเวลาที่สบายใจ" },
-  { icon: "♡", title: "ใกล้ชิดและเข้าใจ", text: "สร้างพื้นที่ให้คนในชุมชนช่วยเหลือกันในเรื่องเล็ก ๆ ของชีวิต" },
-  { icon: "✓", title: "ชัดเจนทุกการเดินทาง", text: "เห็นรายละเอียดและสถานะคำขอได้อย่างเป็นระเบียบ" },
+  {
+    title: "เลือกได้ด้วยตัวเอง",
+    text: "คุณตัดสินใจทุกขั้นตอน เลือกเฉพาะคนและเวลาที่สบายใจ",
+    color: "bg-pastel-yellow",
+    Icon: IconStar,
+  },
+  {
+    title: "ใกล้ชิดและเข้าใจ",
+    text: "สร้างพื้นที่ให้คนในชุมชนช่วยเหลือกันในเรื่องเล็ก ๆ ของชีวิต",
+    color: "bg-pastel-lilac",
+    Icon: IconHandshake,
+  },
+  {
+    title: "ชัดเจนทุกการเดินทาง",
+    text: "เห็นรายละเอียดและสถานะคำขอได้อย่างเป็นระเบียบผ่านแอปพลิเคชัน",
+    color: "bg-pastel-peach",
+    Icon: IconClipboard,
+  },
 ];
 
 export default function Home() {
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function checkUser() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from("users").select("role").eq("id", user.id).maybeSingle();
+        if (data) {
+          setUserRole(data.role);
+        }
+      }
+      setIsLoading(false);
+    }
+    checkUser();
+  }, []);
+
   return (
-    <main className="min-h-screen overflow-hidden bg-[#f7f8f4] text-[#153c34]">
+    <main className="min-h-screen bg-cream text-ink overflow-hidden">
+      {/* ── Navbar ───────────────────────────────── */}
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
         <Brand />
-        <div className="hidden items-center gap-7 text-sm font-semibold text-[#5f746b] md:flex">
-          <a className="transition hover:text-[#1d7665]" href="#how-it-works">วิธีใช้งาน</a>
-          <a className="transition hover:text-[#1d7665]" href="#our-promise">ความตั้งใจของเรา</a>
+        <div className="hidden items-center gap-7 text-sm font-black text-ink/70 md:flex">
+          <a className="transition hover:text-ink" href="#how-it-works">วิธีใช้งาน</a>
+          <a className="transition hover:text-ink" href="#our-promise">ความตั้งใจของเรา</a>
         </div>
-        <Link href="/login" className="rounded-full bg-[#153c34] px-4 py-2.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(21,60,52,0.15)] transition hover:-translate-y-0.5 hover:bg-[#1d6658] sm:px-5">
-          เข้าสู่ระบบ
-        </Link>
+        {isLoading ? (
+          <div className="h-10 w-24 animate-pulse rounded-full bg-ink/10" />
+        ) : userRole ? (
+          <Link
+            href={userRole === "admin" ? "/admin" : userRole === "companion" ? "/companion" : "/customer"}
+            className="btn-cartoon flex items-center gap-2 bg-pastel-mint px-5 py-2.5 text-sm text-ink"
+          >
+            <span className="icon-circle !h-5 !w-5 !border-2 bg-white text-[10px] font-black text-ink">
+              {userRole === "companion" ? "C" : userRole === "customer" ? "U" : "A"}
+            </span>
+            <span>
+              {userRole === "companion" ? "พื้นที่ Companion" : userRole === "customer" ? "พื้นที่ผู้ใช้บริการ" : "พื้นที่แอดมิน"}
+            </span>
+          </Link>
+        ) : (
+          <Link
+            href="/login"
+            className="btn-cartoon bg-cartoon-mint px-5 py-2.5 text-sm text-ink"
+          >
+            เข้าสู่ระบบ
+          </Link>
+        )}
       </nav>
 
-      <section className="relative isolate mx-auto grid max-w-7xl items-center gap-12 px-5 pb-18 pt-10 sm:px-8 sm:pb-24 lg:min-h-[calc(100svh-82px)] lg:grid-cols-[1.06fr_0.94fr] lg:gap-16 lg:px-10">
-        <div className="pointer-events-none absolute -left-36 top-12 -z-10 h-96 w-96 rounded-full bg-[#dcefe7] blur-3xl" />
-        <div className="pointer-events-none absolute right-0 top-12 -z-10 h-80 w-80 rounded-full bg-[#fbe0d3] blur-3xl" />
-        <div className="relative z-10 max-w-2xl">
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#c9e1d6] bg-white/80 px-4 py-2 text-xs font-bold tracking-wide text-[#1d6658] shadow-sm backdrop-blur">
-            <span className="h-2 w-2 rounded-full bg-[#f28b64]" /> อยู่ข้างคุณในทุกธุระ
-          </p>
-          <h1 className="mt-7 text-[clamp(3.15rem,7vw,6.15rem)] font-semibold leading-[1.03] tracking-[-0.06em] text-[#153c34]">
+      {/* ── Hero Section ─────────────────────────── */}
+      <section className="relative mx-auto max-w-7xl px-5 pb-16 pt-8 sm:px-8 sm:pb-24 lg:grid lg:min-h-[calc(100svh-82px)] lg:grid-cols-2 lg:items-center lg:gap-10 lg:px-10">
+        {/* Soft decorative blobs */}
+        <div className="pointer-events-none absolute -left-20 top-10 h-48 w-48 rounded-full bg-pastel-mint/40 blur-3xl" />
+        <div className="pointer-events-none absolute -right-10 top-32 h-40 w-40 rounded-full bg-pastel-pink/30 blur-3xl" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="relative z-10 max-w-2xl"
+        >
+          <span className="badge-cartoon bg-pastel-yellow text-ink">
+            <span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-ink bg-cartoon-mint" />
+            อยู่ข้างคุณในทุกธุระ
+          </span>
+
+          <h1 className="mt-7 text-[clamp(2.6rem,6.5vw,5.5rem)] font-black leading-[1.08] text-ink">
             ไปไหนก็ได้<br />
-            <span className="relative z-0 whitespace-nowrap text-[#1d7665] after:absolute after:-bottom-1 after:left-0 after:-z-10 after:h-3 after:w-full after:rounded-full after:bg-[#f7cbb7]/70">เมื่อมีคนไปด้วย</span>
+            <span className="relative inline-block text-ink">
+              เมื่อมีคนไปด้วย
+              <span className="absolute -bottom-1 left-0 -z-10 h-4 w-full rounded-full bg-cartoon-mint" />
+            </span>
           </h1>
-          <p className="mt-8 max-w-xl text-base leading-8 text-[#5b7067] sm:text-lg">
+
+          <p className="mt-7 max-w-xl text-base font-bold leading-8 text-ink/60 sm:text-lg">
             แพลตฟอร์มที่เชื่อมโยงคุณกับ Companion ที่พร้อมช่วยเดินทางและทำธุระทั่วไป ให้ทุกก้าวนอกบ้านเบาลงอีกนิด
           </p>
-          <div className="mt-9 grid max-w-xl gap-3 sm:grid-cols-2">
-            <Link href="/login?role=customer" className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#1d7665] px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_28px_rgba(29,118,101,0.22)] transition hover:-translate-y-0.5 hover:bg-[#155f52]">
-              ฉันต้องการผู้ช่วย <span className="transition group-hover:translate-x-0.5">→</span>
+
+          <div className="mt-9 flex flex-col gap-4 sm:flex-row">
+            <Link
+              href="/login?role=customer"
+              className="btn-cartoon bg-cartoon-mint px-7 py-4 text-center text-sm text-ink"
+            >
+              ฉันต้องการผู้ช่วย →
             </Link>
-            <Link href="/login?role=companion" className="group inline-flex items-center justify-center gap-2 rounded-full border border-[#b8d8ca] bg-white px-6 py-3.5 text-sm font-bold text-[#1d6658] shadow-sm transition hover:-translate-y-0.5 hover:border-[#75af9d] hover:bg-[#edf7f1]">
-              ฉันอยากเป็น Companion <span className="transition group-hover:translate-x-0.5">→</span>
+            <Link
+              href="/login?role=companion"
+              className="btn-cartoon bg-pastel-pink px-7 py-4 text-center text-sm text-ink"
+            >
+              ฉันอยากเป็น Companion
             </Link>
           </div>
-          <div className="mt-9 flex items-center gap-4 text-xs text-[#70847b]">
+
+          <div className="mt-9 flex items-center gap-4 text-sm font-bold text-ink/60">
             <div className="flex -space-x-2">
-              <span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#f7f8f4] bg-[#f6caae] text-[#754934]">อ</span>
-              <span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#f7f8f4] bg-[#b8ded0] text-[#276a5b]">ม</span>
-              <span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#f7f8f4] bg-[#e6d5ef] text-[#70558e]">พ</span>
+              <span className="icon-circle !h-9 !w-9 !border-[3px] bg-pastel-peach text-xs font-black">อ</span>
+              <span className="icon-circle !h-9 !w-9 !border-[3px] bg-pastel-blue text-xs font-black">ม</span>
+              <span className="icon-circle !h-9 !w-9 !border-[3px] bg-pastel-lilac text-xs font-black">พ</span>
             </div>
-            <span><strong className="text-[#35564b]">คนในชุมชน</strong> พร้อมช่วยเหลือกัน</span>
+            <span><strong className="text-ink">คนในชุมชน</strong> พร้อมช่วยเหลือกัน</span>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="relative mx-auto h-[395px] w-full max-w-[500px] sm:h-[510px]">
-          <div className="absolute inset-x-7 bottom-0 top-7 rounded-[2.5rem] bg-[#dcefe7] sm:inset-x-10 sm:top-10" />
-          <div className="absolute inset-x-4 bottom-4 top-0 overflow-hidden rounded-[2.25rem] border-[5px] border-white bg-[#e4f1eb] shadow-[0_24px_56px_rgba(21,60,52,0.18)] sm:inset-x-8 sm:bottom-8">
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1559234938-b60fff04894d?auto=format&fit=crop&w=1000&q=85')" }} />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#153c34]/70 via-[#153c34]/5 to-transparent" />
-            <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between gap-3 rounded-[1.35rem] border border-white/80 bg-white/92 p-2 shadow-[0_12px_28px_rgba(21,60,52,0.2)] backdrop-blur sm:bottom-8 sm:left-8 sm:right-8">
-              <div className="px-3 py-2">
-                <p className="text-[11px] font-medium text-[#70847b]">Companion ของคุณ</p>
-                <p className="mt-1 text-sm font-bold text-[#153c34]">พร้อมช่วยเสมอ</p>
+        {/* Hero Illustration */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.15 }}
+          className="relative mx-auto mt-10 w-full max-w-lg lg:mt-0"
+        >
+          <div className="card-cartoon relative overflow-hidden p-4">
+            <Image
+              src="/hero-illustration.png"
+              alt="Companion เดินไปด้วยกัน"
+              width={600}
+              height={500}
+              className="w-full rounded-[1.5rem] border-4 border-ink object-cover"
+              priority
+            />
+            {/* Floating badge */}
+            <div className="absolute -right-2 top-6 card-cartoon-sm bg-pastel-yellow animate-floaty px-4 py-3 sm:-right-4 sm:top-10">
+              <p className="text-[11px] font-black text-ink/60">วันนี้มีคนพร้อมช่วย</p>
+              <p className="mt-1 text-xl font-black text-ink">24 คน</p>
+            </div>
+            {/* Bottom status card */}
+            <div className="absolute -bottom-3 left-4 right-4 card-cartoon-sm bg-pastel-mint flex items-center justify-between p-3 sm:left-6 sm:right-6">
+              <div className="px-2">
+                <p className="text-[11px] font-bold text-ink/60">Companion ของคุณ</p>
+                <p className="mt-0.5 text-sm font-black text-ink">พร้อมช่วยเสมอ</p>
               </div>
-              <div className="rounded-xl bg-[#1d7665] px-3 py-2.5 text-white shadow-sm sm:px-4">
-                <p className="text-[11px] text-[#d9f1e8]">สถานะการจับคู่</p>
-                <p className="mt-1 text-sm font-bold">กำลังค้นหา...</p>
+              <div className="card-cartoon-sm bg-pastel-yellow !shadow-[0_3px_0_#2C2A3A] px-3 py-2">
+                <p className="text-[10px] font-bold text-ink/60">สถานะ</p>
+                <p className="text-xs font-black text-ink">กำลังค้นหา...</p>
               </div>
             </div>
           </div>
-          <div className="absolute right-8 top-6 z-10 rounded-2xl border border-white/90 bg-white/95 px-4 py-3 shadow-[0_12px_26px_rgba(21,60,52,0.13)] backdrop-blur sm:right-10 sm:top-10">
-            <p className="text-[11px] font-medium text-[#70847b]">วันนี้มีคนพร้อมช่วย</p>
-            <p className="mt-1 text-lg font-bold text-[#153c34]">24 คน</p>
-          </div>
-        </div>
+        </motion.div>
       </section>
 
-      <section id="how-it-works" className="border-y border-[#dbe7df] bg-white px-5 py-20 sm:px-8 lg:px-10">
+      {/* ── How It Works ─────────────────────────── */}
+      <section id="how-it-works" className="border-y-4 border-ink bg-white px-5 py-20 sm:px-8 lg:px-10">
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
-            <div>
-              <p className="text-xs font-bold tracking-[0.2em] text-[#1d7665]">ง่ายในสามขั้นตอน</p>
-              <h2 className="mt-4 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.05em] text-[#153c34] sm:text-4xl">ความช่วยเหลือที่เริ่มจากการรับฟัง</h2>
-            </div>
-            <p className="max-w-sm text-sm leading-7 text-[#70847b]">ทุกขั้นตอนออกแบบให้ชัดเจน เป็นมิตร และเข้าถึงง่ายสำหรับทุกวัย</p>
+          <div className="text-center">
+            <span className="badge-cartoon bg-pastel-blue text-ink">ง่ายในสามขั้นตอน</span>
+            <h2 className="mt-6 text-3xl font-black text-ink sm:text-4xl">
+              ความช่วยเหลือที่เริ่มจากการรับฟัง
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-sm font-bold leading-7 text-ink/60">
+              ทุกขั้นตอนออกแบบให้ชัดเจน เป็นมิตร และเข้าถึงง่ายสำหรับทุกวัย
+            </p>
           </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
+
+          <div className="mt-14 grid gap-6 md:grid-cols-3">
             {steps.map((step, index) => (
-              <article key={step.number} className={`rounded-[1.65rem] border border-[#dbe7df] p-7 transition hover:-translate-y-1 hover:shadow-[0_18px_35px_rgba(21,60,52,0.08)] ${index === 1 ? "bg-[#eaf5f0]" : "bg-[#f9fbf8]"}`}>
-                <span className="inline-grid h-10 w-10 place-items-center rounded-xl bg-white text-sm font-bold text-[#1d7665] shadow-sm">{step.number}</span>
-                <h3 className="mt-7 text-xl font-semibold tracking-[-0.03em] text-[#153c34]">{step.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-[#5f746b]">{step.text}</p>
-              </article>
+              <motion.article
+                key={step.number}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.15 }}
+                className={`card-cartoon ${step.color} p-7 transition hover:-translate-y-2`}
+              >
+                <step.Icon size={56} />
+                <h3 className="mt-5 text-xl font-black text-ink">{step.title}</h3>
+                <p className="mt-3 text-sm font-bold leading-7 text-ink/60">{step.text}</p>
+              </motion.article>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="our-promise" className="bg-[#153c34] px-5 py-20 text-white sm:px-8 lg:px-10">
+      {/* ── Our Promise ──────────────────────────── */}
+      <section id="our-promise" className="relative bg-ink px-5 py-20 text-white sm:px-8 lg:px-10 overflow-hidden">
+        {/* Small decorative dots */}
+        <div className="pointer-events-none absolute right-12 top-14 h-6 w-6 rounded-full bg-cartoon-mint/30" />
+        <div className="pointer-events-none absolute right-24 top-24 h-4 w-4 rounded-full bg-pastel-pink/30" />
+        <div className="pointer-events-none absolute left-10 bottom-16 h-5 w-5 rounded-full bg-pastel-yellow/30" />
+        <div className="pointer-events-none absolute left-20 bottom-28 h-3 w-3 rounded-full bg-pastel-blue/30" />
+
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
+          <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <p className="text-xs font-bold tracking-[0.2em] text-[#9ed3c2]">OUR PROMISE</p>
-              <h2 className="mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-[-0.05em] sm:text-4xl">เราอยู่ที่นี่เพื่อช่วยให้<br />ชีวิตประจำวันเดินต่อได้</h2>
+              <span className="badge-cartoon border-white/20 bg-white/10 text-cartoon-mint">OUR PROMISE</span>
+              <h2 className="mt-6 max-w-2xl text-3xl font-black leading-tight sm:text-5xl">
+                เราอยู่ที่นี่เพื่อช่วยให้<br className="hidden sm:block"/>ชีวิตประจำวันเดินต่อได้
+              </h2>
             </div>
-            <p className="max-w-sm text-sm leading-7 text-[#c7dfd5]">Care Companion ให้บริการช่วยเดินทางและทำธุระทั่วไป ไม่ใช่บริการทางการแพทย์หรือการดูแลรักษาผู้ป่วย</p>
+            <p className="max-w-sm text-sm font-bold leading-7 text-white/50">
+              Care Companion ให้บริการช่วยเดินทางและทำธุระทั่วไป ไม่ใช่บริการทางการแพทย์หรือการดูแลรักษาผู้ป่วย
+            </p>
           </div>
-          <div className="mt-12 grid gap-4 md:grid-cols-3">
-            {values.map((value) => (
-              <article key={value.title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-6">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#8bc7b6]/15 text-lg text-[#9ed3c2]">{value.icon}</span>
-                <h3 className="mt-5 text-lg font-semibold">{value.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#c7dfd5]">{value.text}</p>
-              </article>
+
+          <div className="mt-14 grid gap-6 md:grid-cols-3">
+            {values.map((value, index) => (
+              <motion.article
+                key={value.title}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className={`card-cartoon ${value.color} p-7 text-ink`}
+              >
+                <value.Icon size={48} />
+                <h3 className="mt-4 text-xl font-black">{value.title}</h3>
+                <p className="mt-3 text-sm font-bold leading-7 text-ink/60">{value.text}</p>
+              </motion.article>
             ))}
+          </div>
+
+          {/* Community illustration */}
+          <div className="mx-auto mt-16 max-w-md">
+            <Image
+              src="/community-illustration.png"
+              alt="ชุมชนที่ช่วยเหลือกัน"
+              width={800}
+              height={400}
+              className="w-full h-auto rounded-[2rem] border-4 border-white/20 object-cover"
+            />
           </div>
         </div>
       </section>
+
+      {/* ── Footer ───────────────────────────────── */}
+      <footer className="border-t-4 border-ink bg-cream py-10 text-center">
+        <p className="text-sm font-bold text-ink/40">© {new Date().getFullYear()} Care Companion. ทุกสิทธิ์สงวนไว้</p>
+      </footer>
     </main>
   );
 }
