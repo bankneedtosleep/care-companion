@@ -63,10 +63,6 @@ export default async function CustomerPage({
   if (!account) {
     redirect("/onboarding?error=wrong-role");
   }
-  // TEMPORARY FOR TESTING: Allow mismatch role
-  // if (account.role !== "customer") {
-  //   redirect("/onboarding?error=wrong-role");
-  // }
 
   const [requestsResult, companionsResult] = await Promise.all([
     supabase.from("requests").select("*").eq("customer_id", user.id).order("service_date", { ascending: true }).order("start_time", { ascending: true }),

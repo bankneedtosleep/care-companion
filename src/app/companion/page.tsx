@@ -64,10 +64,6 @@ export default async function CompanionPage({
   if (!account) {
     redirect("/onboarding?error=wrong-role");
   }
-  // TEMPORARY FOR TESTING: Allow mismatch role
-  // if (account.role !== "companion") {
-  //   redirect("/onboarding?error=wrong-role");
-  // }
 
   const [profileResult, requestsResult] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),

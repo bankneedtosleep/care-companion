@@ -25,9 +25,8 @@ async function accountFor(role?: Role) {
     redirect("/onboarding?error=wrong-role");
   }
   
-  // TEMPORARY HACK FOR TESTING: Allow users to bypass strict role checks
-  // so they can test both Customer and Companion with a single Google account.
-  // if (role && account.role !== role) redirect("/onboarding?error=wrong-role");
+  // The strict 1-account-1-role mismatch check has been permanently removed
+  // to allow testing both roles with a single account.
   
   return { supabase, user, role: account.role as Role };
 }
