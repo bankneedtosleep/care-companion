@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Mali, Noto_Sans_Thai, Nunito } from "next/font/google";
 import "./globals.css";
+import { RealtimeRequests } from "@/components/realtime-requests";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,7 +42,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="th"
       className={`${geistSans.variable} ${geistMono.variable} ${notoThai.variable} ${mali.variable} ${nunito.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <RealtimeRequests />
+        {children}
+      </body>
     </html>
   );
 }

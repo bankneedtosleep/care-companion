@@ -61,11 +61,11 @@ export default async function CustomerPage({
 
   const { data: account } = await supabase.from("users").select("role").eq("id", user.id).maybeSingle();
   if (!account || account.role !== "customer") {
-    redirect("/onboarding");
+    redirect("/onboarding?error=wrong-role");
   }
 
   const [requestsResult, companionsResult] = await Promise.all([
-    supabase.from("requests").select("*").order("service_date", { ascending: true }).order("start_time", { ascending: true }),
+    supabase.from("requests").select("*").eq("customer_id", user.id).order("service_date", { ascending: true }).order("start_time", { ascending: true }),
     supabase.rpc("list_companions"),
   ]);
   const requests = (requestsResult.data ?? []) as ServiceRequest[];

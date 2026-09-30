@@ -19,12 +19,26 @@ const roles = [
   },
 ];
 
-export default function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
   return (
     <main className="min-h-screen overflow-hidden bg-cream px-5 py-6 text-ink sm:px-8 sm:py-7">
       <div className="mx-auto max-w-5xl">
         <Brand compact />
         <section className="relative mt-12 card-cartoon bg-white p-7 sm:mt-16 sm:p-12">
+          {params.error === "wrong-role" ? (
+            <div className="mb-6 card-cartoon-sm bg-pastel-peach px-5 py-4 flex gap-3 items-start">
+              <span className="icon-circle bg-white text-ink font-black mt-0.5">!</span>
+              <div>
+                <h3 className="font-black text-ink">สิทธิ์การเข้าถึงไม่ถูกต้อง</h3>
+                <p className="mt-1 text-sm font-bold text-ink/70">คุณพยายามเข้าสู่หน้าที่ไม่ตรงกับบทบาทของคุณ กรุณาเลือกบทบาทที่ถูกต้อง หรือเข้าสู่ระบบด้วยบัญชีอื่น</p>
+              </div>
+            </div>
+          ) : null}
           <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-pastel-mint/30 blur-2xl" />
           <div className="relative max-w-2xl">
             <span className="badge-cartoon bg-pastel-yellow text-ink">เริ่มต้นใช้งาน</span>

@@ -1,0 +1,30 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/browser";
+
+export function RealtimeRequests() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const supabase = createClient();
+    
+    const channel = supabase
+      .channel('realtime-requests')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'requests' },
+        () => {
+          router.refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router]);
+
+  return null;
+}

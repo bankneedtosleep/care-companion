@@ -62,7 +62,7 @@ export default async function CompanionPage({
 
   const { data: account } = await supabase.from("users").select("role").eq("id", user.id).maybeSingle();
   if (!account || account.role !== "companion") {
-    redirect("/onboarding");
+    redirect("/onboarding?error=wrong-role");
   }
 
   const [profileResult, requestsResult] = await Promise.all([
@@ -70,6 +70,11 @@ export default async function CompanionPage({
     supabase.from("requests").select("*").order("service_date", { ascending: true }).order("start_time", { ascending: true }),
   ]);
   const profile = (profileResult.data ?? {}) as Profile;
+  if (profile.experience?.includes("[[PHONE:")) {
+    const match = profile.experience.match(/\[\[PHONE:(.+?)\]\]/);
+    if (match) profile.phone = match[1];
+  }
+  
   const requests = (requestsResult.data ?? []) as ServiceRequest[];
   const profileFields = [profile.full_name, profile.bio, profile.availability, profile.skills?.length, profile.service_areas?.length];
   const profileProgress = Math.round((profileFields.filter(Boolean).length / profileFields.length) * 100);
@@ -133,7 +138,7 @@ export default async function CompanionPage({
               <label className="grid gap-2 text-sm font-black text-ink">พื้นที่ที่ให้บริการ<input name="service_areas" maxLength={300} defaultValue={profile.service_areas?.join(", ") ?? ""} placeholder="คั่นแต่ละพื้นที่ด้วยเครื่องหมาย ," className="input-cartoon h-12 placeholder:font-bold placeholder:text-ink/30" /></label>
               <label className="grid gap-2 text-sm font-black text-ink">ความถนัด<input name="skills" maxLength={300} defaultValue={profile.skills?.join(", ") ?? ""} placeholder="เช่น พาไปโรงพยาบาล, ใช้รถเข็น" className="input-cartoon h-12 placeholder:font-bold placeholder:text-ink/30" /></label>
               <label className="grid gap-2 text-sm font-black text-ink sm:col-span-2">แนะนำตัว<textarea name="bio" required maxLength={500} rows={3} defaultValue={profile.bio ?? ""} placeholder="เล่าแนวทางการช่วยเหลือและสิ่งที่ทำให้คุณเหมาะกับบทบาทนี้" className="input-cartoon resize-y py-3 placeholder:font-bold placeholder:text-ink/30" /></label>
-              <label className="grid gap-2 text-sm font-black text-ink sm:col-span-2">ประสบการณ์ (ไม่บังคับ)<textarea name="experience" maxLength={500} rows={2} defaultValue={profile.experience ?? ""} placeholder="เช่น เคยอาสาพาผู้สูงอายุไปทำธุระ" className="input-cartoon resize-y py-3 placeholder:font-bold placeholder:text-ink/30" /></label>
+              <label className="grid gap-2 text-sm font-black text-ink sm:col-span-2">ประสบการณ์ (ไม่บังคับ)<textarea name="experience" maxLength={500} rows={2} defaultValue={profile.experience?.replace(/\s*\[\[PHONE:.+?\]\]/g, "") ?? ""} placeholder="เช่น เคยอาสาพาผู้สูงอายุไปทำธุระ" className="input-cartoon resize-y py-3 placeholder:font-bold placeholder:text-ink/30" /></label>
               <label className="grid gap-2 text-sm font-black text-ink">เบอร์โทรศัพท์ (เก็บเป็นข้อมูลส่วนตัว)<input name="phone" type="tel" maxLength={30} defaultValue={profile.phone ?? ""} className="input-cartoon h-12" /></label>
               <div className="flex items-end"><button type="submit" className="btn-cartoon w-full bg-cartoon-mint px-5 py-3.5 text-sm text-ink">บันทึกโปรไฟล์</button></div>
             </form>

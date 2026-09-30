@@ -20,7 +20,7 @@ async function accountFor(role?: Role) {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!account || (role && account.role !== role)) redirect("/onboarding");
+  if (!account || (role && account.role !== role)) redirect("/onboarding?error=wrong-role");
   return { supabase, user, role: account.role as Role };
 }
 
@@ -85,6 +85,7 @@ export async function createServiceRequest(formData: FormData) {
 
   revalidatePath("/customer");
   revalidatePath("/companion");
+  revalidatePath("/status");
   redirect("/customer?notice=request-created");
 }
 
@@ -102,6 +103,7 @@ export async function selectCompanion(formData: FormData) {
 
   revalidatePath("/customer");
   revalidatePath("/companion");
+  revalidatePath("/status");
   redirect("/customer?notice=companion-selected");
 }
 
@@ -116,6 +118,7 @@ export async function acceptServiceRequest(formData: FormData) {
   revalidatePath("/customer");
   revalidatePath("/companion");
   revalidatePath("/admin");
+  revalidatePath("/status");
   redirect("/companion?notice=request-accepted");
 }
 
@@ -138,6 +141,7 @@ export async function transitionServiceRequest(formData: FormData) {
   revalidatePath("/customer");
   revalidatePath("/companion");
   revalidatePath("/admin");
+  revalidatePath("/status");
   redirect(`${destination}?notice=status-updated`);
 }
 
@@ -145,12 +149,19 @@ export async function saveCompanionProfile(formData: FormData) {
   const { supabase, user } = await accountFor("companion");
   const fullName = text(formData.get("full_name"), 100);
   const bio = text(formData.get("bio"), 500);
-  const experience = text(formData.get("experience"), 500);
+  let experience = text(formData.get("experience"), 500);
   const phone = text(formData.get("phone"), 30);
   const availability = text(formData.get("availability"), 160);
 
   if (!fullName || !bio || !availability) {
     problem("/companion", "กรุณาระบุชื่อ คำแนะนำตัว และช่วงเวลาที่สะดวก");
+  }
+
+  // Remove old phone tag if exists
+  experience = experience.replace(/\s*\[\[PHONE:.+?\]\]/g, "");
+  // Append new phone tag if phone exists
+  if (phone) {
+    experience = experience ? `${experience} [[PHONE:${phone}]]` : `[[PHONE:${phone}]]`;
   }
 
   const { error } = await supabase
@@ -169,6 +180,7 @@ export async function saveCompanionProfile(formData: FormData) {
   if (error) problem("/companion", error.message);
   revalidatePath("/companion");
   revalidatePath("/customer");
+  revalidatePath("/status");
   redirect("/companion?notice=profile-saved");
 }
 
@@ -189,6 +201,7 @@ export async function adminSetRequestStatus(formData: FormData) {
   revalidatePath("/customer");
   revalidatePath("/companion");
   revalidatePath("/admin");
+  revalidatePath("/status");
   redirect("/admin?notice=status-updated");
 }
 

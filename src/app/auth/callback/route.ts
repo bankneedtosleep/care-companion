@@ -12,11 +12,24 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     await supabase.auth.exchangeCodeForSession(code);
     const { data: { user } } = await supabase.auth.getUser();
-    if (user && role) {
-      await supabase.rpc("set_my_role", { selected_role: role });
-    }
     if (user) {
       const { data: account } = await supabase.from("users").select("role").eq("id", user.id).maybeSingle();
+      
+      if (account?.role && role && account.role !== role) {
+        // Role mismatch: Account has a role, but user tried to login as a different role
+        const response = NextResponse.redirect(new URL("/onboarding?error=wrong-role", requestUrl.origin));
+        response.cookies.delete("care-companion-role");
+        return response;
+      }
+      
+      if (!account?.role && role) {
+        // No role yet, set it
+        await supabase.rpc("set_my_role", { selected_role: role });
+        const response = NextResponse.redirect(new URL(`/${role}`, requestUrl.origin));
+        response.cookies.delete("care-companion-role");
+        return response;
+      }
+
       if (account?.role === "admin" || account?.role === "customer" || account?.role === "companion") {
         const response = NextResponse.redirect(new URL(`/${account.role}`, requestUrl.origin));
         response.cookies.delete("care-companion-role");

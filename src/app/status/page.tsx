@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AppHeader } from "@/components/brand";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { ChatBox } from "@/components/chat-box";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ type ServiceRequest = {
   updated_at: string;
 };
 
-type Profile = { id: string; full_name: string | null; avatar_url: string | null; bio: string | null };
+type Profile = { id: string; full_name: string | null; avatar_url: string | null; bio: string | null; phone: string | null };
 
 const statusLabels: Record<RequestStatus, string> = {
   pending: "กำลังรอการตอบรับ",
@@ -69,6 +70,10 @@ export default async function ServiceStatusPage({
   if (id) requestQuery = requestQuery.eq("id", id);
   const { data } = await requestQuery.maybeSingle();
   const request = data as ServiceRequest | null;
+  
+  // DIAGNOSTIC CHECK
+  supabase.from("messages").select("id").limit(1).then(r => console.log("DIAG_MSG:", r));
+  supabase.from("profiles").select("id, phone").limit(1).then(r => console.log("DIAG_PROF:", r));
 
   if (!request) {
     return (
@@ -87,12 +92,40 @@ export default async function ServiceStatusPage({
   }
 
   const profileIds = [request.customer_id, request.companion_id].filter(Boolean) as string[];
-  const { data: profiles } = await supabase.from("profiles").select("id, full_name, avatar_url, bio").in("id", profileIds);
-  const profileMap = new Map((profiles as Profile[] | null ?? []).map((profile) => [profile.id, profile]));
-  const customer = profileMap.get(request.customer_id);
-  const companion = request.companion_id ? profileMap.get(request.companion_id) : null;
+  const { data: profiles } = await supabase.from("profiles").select("id, full_name, avatar_url, bio, phone, experience").in("id", profileIds);
+  const profileMap = new Map((profiles as (Profile & { experience?: string | null })[] | null ?? []).map((profile) => [profile.id, profile]));
+  
+  let customer = profileMap.get(request.customer_id);
+  let companion = request.companion_id ? profileMap.get(request.companion_id) : null;
+
+  // HACK: If RLS blocked the companion profile fetch, use list_companions RPC to find it
+  if (request.companion_id && !companion) {
+    const { data: allCompanions } = await supabase.rpc("list_companions");
+    const found = (allCompanions as any[] | null)?.find(c => c.id === request.companion_id);
+    if (found) {
+      companion = { ...found, phone: null };
+      // Extract phone from experience if embedded
+      if (found.experience && found.experience.includes("[[PHONE:")) {
+        const match = found.experience.match(/\[\[PHONE:(.+?)\]\]/);
+        if (match) companion!.phone = match[1];
+      }
+    }
+  }
+
+  // Also extract phone if it was fetched via normal profiles but embedded
+  if (companion?.experience?.includes("[[PHONE:")) {
+    const match = companion.experience.match(/\[\[PHONE:(.+?)\]\]/);
+    if (match) companion.phone = match[1];
+  }
+
   const timeline = timelineFor(request.status);
   const backHref = user.id === request.customer_id ? "/customer" : "/companion";
+
+  const partner = user.id === request.customer_id 
+    ? (companion || { id: request.companion_id!, full_name: "Companion", avatar_url: null, bio: null, phone: null })
+    : (customer || { id: request.customer_id, full_name: "Customer", avatar_url: null, bio: null, phone: null });
+  
+  const isCommunicable = ["accepted", "in_progress"].includes(request.status);
 
   return (
     <main className="min-h-screen bg-cream px-5 py-5 text-ink sm:px-8 sm:py-7">
@@ -136,6 +169,43 @@ export default async function ServiceStatusPage({
             </div>
           </aside>
         </section>
+
+        {isCommunicable && partner ? (
+          <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]" aria-label="ช่องทางการติดต่อ">
+            <div className="card-cartoon bg-pastel-blue p-6 sm:p-8">
+              <span className="badge-cartoon bg-white text-ink">CONTACT</span>
+              <h2 className="mt-5 text-2xl font-black">ช่องทางติดต่อ</h2>
+              <p className="mt-3 text-sm font-bold leading-6 text-ink/70">
+                คุณสามารถติดต่อ {partner.full_name || "พาร์ทเนอร์"} ได้โดยตรงผ่านเบอร์โทรศัพท์หรือแชทด้านล่างนี้
+              </p>
+              {partner.phone ? (
+                <div className="mt-8 card-cartoon bg-white p-5 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-ink/50">เบอร์โทรศัพท์</p>
+                    <p className="text-xl font-black mt-1">{partner.phone}</p>
+                  </div>
+                  <a href={`tel:${partner.phone}`} className="btn-cartoon bg-cartoon-mint text-ink px-5 py-2.5 shadow-[0_4px_0_#2C2A3A]">
+                    โทรออก
+                  </a>
+                </div>
+              ) : partner.id === request.companion_id ? (
+                <div className="mt-8 card-cartoon border-dashed bg-white/50 p-5 text-center text-sm font-bold text-ink/50">
+                  ไม่ได้ระบุเบอร์โทรศัพท์ไว้
+                </div>
+              ) : (
+                <div className="mt-8 card-cartoon bg-white/50 p-5 text-sm font-bold text-ink/60">
+                  พูดคุยผ่านช่องทางแชทด้านข้างได้เลย
+                </div>
+              )}
+            </div>
+            
+            <ChatBox 
+              requestId={request.id} 
+              currentUserId={user.id} 
+              partnerName={partner.full_name || (user.id === request.customer_id ? "Companion" : "Customer")} 
+            />
+          </section>
+        ) : null}
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <article className="card-cartoon bg-white p-6 sm:p-8">
