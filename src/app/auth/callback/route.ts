@@ -18,8 +18,21 @@ export async function GET(request: Request) {
       // to allow testing both roles with a single account.
       
       if (!account?.role && role) {
-        // No role yet, set it
-        await supabase.rpc("set_my_role", { selected_role: role });
+        // No role yet, set it directly using a token-injected client
+        // to bypass any Next.js cookie/SSR timing issues and missing RPCs.
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData.session) {
+          const { createServerClient } = await import("@supabase/ssr");
+          const authSupabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+              cookies: { getAll: () => [], setAll: () => {} },
+              global: { headers: { Authorization: `Bearer ${sessionData.session.access_token}` } }
+            }
+          );
+          await authSupabase.from("users").upsert({ id: user.id, role }, { onConflict: "id" });
+        }
         const response = NextResponse.redirect(new URL(`/${role}`, requestUrl.origin));
         response.cookies.delete("care-companion-role");
         return response;
