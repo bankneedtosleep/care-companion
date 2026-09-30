@@ -20,7 +20,15 @@ async function accountFor(role?: Role) {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!account || (role && account.role !== role)) redirect("/onboarding?error=wrong-role");
+  if (!account) {
+    // If account is missing completely, redirect to onboarding to set role
+    redirect("/onboarding?error=wrong-role");
+  }
+  
+  // TEMPORARY HACK FOR TESTING: Allow users to bypass strict role checks
+  // so they can test both Customer and Companion with a single Google account.
+  // if (role && account.role !== role) redirect("/onboarding?error=wrong-role");
+  
   return { supabase, user, role: account.role as Role };
 }
 

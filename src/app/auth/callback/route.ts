@@ -15,12 +15,13 @@ export async function GET(request: Request) {
     if (user) {
       const { data: account } = await supabase.from("users").select("role").eq("id", user.id).maybeSingle();
       
-      if (account?.role && role && account.role !== role) {
-        // Role mismatch: Account has a role, but user tried to login as a different role
-        const response = NextResponse.redirect(new URL("/onboarding?error=wrong-role", requestUrl.origin));
-        response.cookies.delete("care-companion-role");
-        return response;
-      }
+      // TEMPORARY FOR TESTING: Allow mismatch role
+      // if (account?.role && role && account.role !== role) {
+      //   // Role mismatch: Account has a role, but user tried to login as a different role
+      //   const response = NextResponse.redirect(new URL("/onboarding?error=wrong-role", requestUrl.origin));
+      //   response.cookies.delete("care-companion-role");
+      //   return response;
+      // }
       
       if (!account?.role && role) {
         // No role yet, set it
@@ -31,7 +32,9 @@ export async function GET(request: Request) {
       }
 
       if (account?.role === "admin" || account?.role === "customer" || account?.role === "companion") {
-        const response = NextResponse.redirect(new URL(`/${account.role}`, requestUrl.origin));
+        // TEMPORARY FOR TESTING: Redirect to requested role instead of account role
+        const targetRole = role || account.role;
+        const response = NextResponse.redirect(new URL(`/${targetRole}`, requestUrl.origin));
         response.cookies.delete("care-companion-role");
         return response;
       }

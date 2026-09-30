@@ -8,12 +8,8 @@ export async function GET() {
     { cookies: { getAll: () => [], setAll: () => {} } }
   );
 
-  // Try to insert a dummy message to see if RLS blocks ANON key
-  const { data, error } = await supabase.from("messages").insert({
-    request_id: "00000000-0000-0000-0000-000000000000",
-    sender_id: "00000000-0000-0000-0000-000000000000",
-    content: "test",
-  }).select();
+  const { data: reqs } = await supabase.from("requests").select("id, customer_id, errand_type");
+  const { data: users } = await supabase.from("users").select("id, role");
 
-  return NextResponse.json({ data, error });
+  return NextResponse.json({ reqs, users });
 }
